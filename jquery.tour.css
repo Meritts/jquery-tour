@@ -1,0 +1,25 @@
+.tour-container { max-width: 200px; z-index: 120;font-family: 'Trebuchet MS', 'Myriad Pro', Arial, sans-serif;position: absolute;right: 30px;top: 90px;background: black;color: white;padding: 15px 30px 20px 15px;border-radius: 5px; }
+.tour-container > div > a { position: absolute; right: 10px; top: 7px; color: white; text-decoration: none;font-size: 15px; }
+.tour-container header p { font-size: 16px; }
+.tour-container footer { margin-top: 15px; margin-bottom: -8px; }
+.tour-container footer a { text-decoration: underline; color: #FFF; font-size: 11px; display: inline-block; margin-right: 5px; }
+.tour-container footer a:hover { color: #DCDCDC; }
+.tour-container > div div { overflow: hidden; }
+.tour-container > div div button { text-decoration: none; white-space: nowrap; display: block; float: left; margin: 15px 10px 0 0; cursor: pointer; background: #C63929; background: -moz-linear-gradient(0% 100% 90deg, #891100 0%, #B51700 50%, #C63929 50%, #EE432E 100%); background: -webkit-gradient(linear, 0 0, 0 100%, color-stop(0, #EE432E), color-stop(0.5, #C63929), color-stop(0.5, #B51700), color-stop(1, #891100)); border: 1px solid #951100; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; -moz-box-shadow: inset 0px 0px 0px 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333; -webkit-box-shadow: inset 0px 0px 0px 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333; box-shadow: inset 0px 0px 0px 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333; color: white; font-size: 13px; font-weight: bold; letter-spacing: 1px; line-height: 1;padding: 6px 7px;text-align: center;text-shadow: 0px -1px 1px rgba(0, 0, 0, .8); }
+.tour-container > div div button:hover { background: #CB0500; background: -moz-linear-gradient(0% 100% 90deg, #A20601 0%, #CB0500 50%, #DB504D 50%, #F37873 100%); background: -webkit-gradient(linear, 0 0, 0 100%, color-stop(0, #F37873), color-stop(0.5, #DB504D), color-stop(0.5, #CB0500), color-stop(1, #A20601)); }
+.tour-container > div div button:active { background: #B30300; background: -moz-linear-gradient(0% 100% 90deg, #700D00 0%, #9C1500 50%, #AD3224 50%, #D43C28 100%); background: -webkit-gradient(linear, 0 0, 0 100%, color-stop(0, #D43C28), color-stop(0.5, #AD3224), color-stop(0.5, #9C1500), color-stop(1, #700D00)); -moz-box-shadow: inset 0px 0px 0px 1px rgba(255, 115, 100, 0.4); -webkit-box-shadow: inset 0px 0px 0px 1px rgba(255, 115, 100, 0.4); box-shadow: inset 0px 0px 0px 1px rgba(255, 115, 100, 0.4); }
+.tour-container > div div button:last-child { margin-right: 0; }
+
+.tour-tip { width: 210px; position: absolute; top: 100px;left: 100px;z-index: 120;background: white;border: 3px solid #303030;border-radius: 5px;-webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);-moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);  }
+.tour-tip h3 { background-color: #F5F5F5; padding: 9px 15px; line-height: 1; -webkit-border-radius: 3px 3px 0 0; -moz-border-radius: 3px 3px 0 0; border-radius: 3px 3px 0 0; border-bottom: 1px solid #EEE;}
+.tour-tip .content { font-size: 12px; background-color: white;padding: 14px;-webkit-border-radius: 0 0 3px 3px;-moz-border-radius: 0 0 3px 3px;border-radius: 0 0 3px 3px;-webkit-background-clip: padding-box;-moz-background-clip: padding-box;background-clip: padding-box; }
+
+.tour-overlay { display: none; z-index: 100; position: absolute;  background: black; opacity: 0.5; }
+.tour-overlay.num_1 { top: 0; left: 0; height: 100%; }
+.tour-overlay.num_3 { top: 0; right: 0; height: 100%; }
+.tour-overlay.num_4 { top: 0; }
+
+.not-started .actions-container .next-step, .not-started .actions-container .end-tour, .not-started .actions-container .prev-step{ display: none !important; }
+.started_first .actions-container .prev-step, .started_first .actions-container .start-tour, .started_first .actions-container .end-tour { display: none !important; }
+.started_middle .actions-container .end-tour, .started_middle .actions-container .start-tour{ display: none !important; }
+.started_last .actions-container .next-step, .started_last .actions-container .start-tour{ display: none !important; }
