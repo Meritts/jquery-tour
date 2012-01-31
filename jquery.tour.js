@@ -60,7 +60,12 @@
         case 'mouseenter': break;
         case 'mouseup': break;
         case 'scroll': break;
+        case false: break;
         default: this.settings.openOn = 'load';
+      }
+      
+      for(var i in this.settings.steps){
+      	this.settings.steps[i].el = $(this.settings.steps[i].el);
       }
       
       //TODO - FIX THIS
@@ -82,12 +87,32 @@
   	*/
   	open: function(e) {
   	  if(e) e.preventDefault();
+  	  
   	  var target = e ? $(this).data('tour').settings.name : this.settings.name;
   	  $(document.getElementById(target)).show();
   	  
   	  if(this.settings.events.onOpen){
   	  	this.settings.events.onOpen.apply(this);
   	  }
+  	},
+  	
+  	close: function(e) {
+  	  var _this = e ? $(this).parents('.tour-container').data('tour') : this;
+  	  
+  	  if(_this.settings.events.beforeClose){
+  	    _this.settings.events.beforeClose.apply(_this);
+  	  }
+  	
+  	  _this.$tourContainer.fadeOut(300);
+  	  $('.tour-overlay').fadeOut(300);
+  	  
+  	  if(_this.settings.events.onClose){
+  	    window.setTimeout(function(){
+  	  	  _this.settings.events.onClose.apply(_this);
+  	    }, 500);
+  	  }
+  	  
+  	  _this.saveData();
   	},
   	
   	/**
@@ -107,7 +132,8 @@
   	createMarkup: function(callback) {
   	  var tmpl = this.settings.tmpl.container;
   	  var data = $.extend(this.settings.labels, {name: this.settings.name});
-
+	  data = $.extend(data, this.settings.welcomeLabels);
+	  
   	  var $body = $('body');
   	  
   	  // Replace texts
@@ -131,7 +157,7 @@
   	events: function() {
   	  $('.start-tour, .next-step').bind('click', this.changeStep);
   	  $('.prev-step').bind('click', this.changeStep);
-  	  $('.close-tour').bind('click', this.endTour);
+  	  $('.close-tour').bind('click', this.close);
   	},
   	
   	/**
@@ -167,9 +193,6 @@
   	    _this.createOverlay();
   	  }
   	  
-  	  if(_this.settings.events.onStepMove){
-  	  	_this.settings.events.onStepMove.apply(_this, [action]);
-  	  }
    	},
   	
   	/**
@@ -177,20 +200,14 @@
   	 * @params No params
   	 * @updated 27/01/2012
   	 */
-  	endTour: function() {
-  	  var $container = $(this).parents('.tour-container');
-  	  var _this = $container.data('tour');
-  	  
-  	  $container.remove();
-  	  
-  	  // TODO - FIX
-  	  $('.tour-overlay').fadeOut();
-  	  
-  	  if(_this.settings.events.onClose){
-  	    _this.settings.events.onClose.apply(_this);
-  	  }
-  	  
-  	  _this.saveData();
+  	destroy: function() {
+  	  this.$tourContainer.remove();
+  	  $('.tour-overlay').remove();
+  	},
+  	
+  	isOpen: function() {
+  	  return this.$tourContainer.is(':visible') ?
+  	  	true : false;
   	},
   	
   	tourStepEventHandler: function(tourStep) {
@@ -379,6 +396,11 @@
   	  if(tourStep.action) {
   	    this.tourStepEventHandler(tourStep);
   	  }
+  	  
+  	  // TODO - ENVIAR COMO PARAMETRO SE TA INDO PRA FRENTE OU TA INDO PRA TRAS
+  	  if(this.settings.events.onStepMove){
+  	  	this.settings.events.onStepMove.apply(this);
+  	  }
   	}
   	
   };
@@ -481,8 +503,8 @@
       prevStep: '&lt; Voltar',
       title: 'Tour',
       titleStep: 'Etapa',
-      welcomeTitle: 'Lorem',
-      welcomeMessage: 'lalalallalaa'
+      welcomeTitle: null,
+      welcomeMessage: null
     },
       
     tip: {

@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<script src="../jquery.1.7.1.min.js"></script>
+		<script src="jquery.1.7.1.min.js"></script>
 		<script src="../jquery.tour.js"></script>
-		<link href="../jquery.tour.css" rel="stylesheet" type="text/css" />
+		<link href="../	jquery.tour.css" rel="stylesheet" type="text/css" />
 		
 		<style>
 			html, body { height: 100%; width: 100%; }
@@ -18,34 +18,6 @@
 			body > aside div li { margin-bottom: 3px; list-style: none;} 
 			p{ display: inline-block;}
 		</style>
-		
-		<script>
-			$(document).ready(function(){
-				$('#1').tour({
-					name: 'teste',
-					title: 'Aqui vai um titulo para apresentar',
-					welcomeMessage: 'Lorem ipsum dolor, simet a magna lorem ipsum dolor, simet at magna',
-					steps: [
-						{
-							el: $('#1'),
-							placement: 'bottom',
-							message: 'Lorem ipsum dolor, simet at magna'
-						},
-						{
-							el: $('#2'),
-							placement: 'right',
-							message: 'Lorem ipsum dolor, simet at magna'
-						}
-						,
-						{
-							el: $('#3'),
-							placement: 'right',
-							message: 'Lorem ipsum dolor, simet at magna'
-						}
-					]
-				});
-			});
-		</script>
 	</head>
 	<body>
 		<aside>
@@ -121,41 +93,44 @@
 	</body>
 	<script>
 		$(document).ready(function(){
-		  $(window).tour({
+		  $('h1').tour({
 		    name: 'teste',
 			localStorage: false,
 			welcomeLabels: {
-			  title: 'Aqui vai um titulo para apresentar',
-			  message: 'Lorem ipsum dolor, simet a magna lorem ipsum dolor, simet at magna'
+			  welcomeTitle: 'Aqui vai um titulo para apresentar',
+			  welcomeMessage: 'Lorem ipsum dolor, simet a magna lorem ipsum dolor, simet at magna'
 			},
 			steps: [
-				{
-					el: $('aside'),
-					placement: 'right',
-					message: 'Lorem ipsum dolor, simet at magna',
-					action: {
-						target: 'a',
-						eventType: 'click',
-						expectEvent: true,
-					}
-				},
-				{
-					el: $('hgroup'),
-					placement: 'bottom',
-					message: 'Lorem ipsum dolor, simet at magna'
-				},
-				{
-					el: $('#step_3'),
-					placement: 'right',
-					message: 'Lorem ipsum dolor, simet at magna'
-				},
-				{
-					el: $('#step_4'),
-					placement: 'top',
-					message: 'Lorem ipsum dolor, simet at magna'
+			  {
+			    el: 'aside',
+				placement: 'right',
+				message: 'Lorem ipsum dolor, simet at magna',
+				action: {
+				  target: 'this',
+				  eventType: 'click',
+				  expectEvent: false,
 				}
+			  },
+			  {
+			    el: 'hgroup',
+				placement: 'bottom',
+				message: 'Lorem ipsum dolor, simet at magna'
+			  },
+			  {
+				el: '#step_3',
+				placement: 'right',
+				message: 'Lorem ipsum dolor, simet at magna'
+			  },
+			  {
+			    el: '#step_4',
+				placement: 'top',
+				message: 'Lorem ipsum dolor, simet at magna'
+			  }
 			]
 		});
+		
 	  });
+	  
+	  
 	</script>
 </html>
