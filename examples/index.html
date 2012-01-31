@@ -1,0 +1,161 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<script src="../jquery.1.7.1.min.js"></script>
+		<script src="../jquery.tour.js"></script>
+		<link href="../jquery.tour.css" rel="stylesheet" type="text/css" />
+		
+		<style>
+			html, body { height: 100%; width: 100%; }
+			body { position: relative; overflow: hidden; }
+			body > aside { width: 29%; float: left;  }
+			#main >  div,aside >  div { background-color: whiteSmoke; margin-bottom: 20px; padding: 19px; min-height: 20px; border: 1px solid #EEE; border: 1px solid rgba(0, 0, 0, 0.05); -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05); -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);}
+			body > #main { width: 70%; float: right; }
+			body > #main hgroup { margin-bottom: 25px; }
+			body > #main ul { overflow: hidden; }
+			body > #main ul li { float: left; width: 250px; margin-right: 30px; list-style: none; }
+			body > aside div ul { margin: 10px 0; }
+			body > aside div li { margin-bottom: 3px; list-style: none;} 
+			p{ display: inline-block;}
+		</style>
+		
+		<script>
+			$(document).ready(function(){
+				$('#1').tour({
+					name: 'teste',
+					title: 'Aqui vai um titulo para apresentar',
+					welcomeMessage: 'Lorem ipsum dolor, simet a magna lorem ipsum dolor, simet at magna',
+					steps: [
+						{
+							el: $('#1'),
+							placement: 'bottom',
+							message: 'Lorem ipsum dolor, simet at magna'
+						},
+						{
+							el: $('#2'),
+							placement: 'right',
+							message: 'Lorem ipsum dolor, simet at magna'
+						}
+						,
+						{
+							el: $('#3'),
+							placement: 'right',
+							message: 'Lorem ipsum dolor, simet at magna'
+						}
+					]
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<aside>
+			<div>
+				<h4>Sidebar</h4>
+				<ul>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#" id='#findme'>Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+				</ul>
+				<h4>Sidebar</h4>
+				<ul>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+				</ul>
+				<h4>Sidebar</h4>
+				<ul>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+				</ul>
+				<h4>Sidebar</h4>
+				<ul>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+					<li><a href="#">Link</a></li>
+				</ul>
+			</div>
+		</aside>
+		<section id="main">
+			<div>
+				<hgroup>
+					<h1>Hello World!</h1>
+					<h2>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.</h2>
+				<button>Lorem dolor</button>
+			</hgroup>
+			<ul>
+				<li id="step_3">
+					<h3>Header</h3>
+					<p>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit. Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit</p>
+				</li>
+				<li>
+					<h3>Header</h3>
+					<p>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit. Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit</p>
+				</li>
+				<li>
+					<h3>Header</h3>
+					<p>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit. Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit</p>
+				</li>
+				<li>
+					<h3>Header</h3>
+					<p>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit. Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit</p>
+				</li>
+				<li>
+					<h3>Header</h3>
+					<p>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit. Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit</p>
+				</li>
+				<li>
+					<h3>Header</h3>
+					<p id="step_4">>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit. Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit</p>
+				</li>
+			</ul>
+			</div>
+		</section>
+	</body>
+	<script>
+		$(document).ready(function(){
+		  $(window).tour({
+		    name: 'teste',
+			localStorage: false,
+			welcomeLabels: {
+			  title: 'Aqui vai um titulo para apresentar',
+			  message: 'Lorem ipsum dolor, simet a magna lorem ipsum dolor, simet at magna'
+			},
+			steps: [
+				{
+					el: $('aside'),
+					placement: 'right',
+					message: 'Lorem ipsum dolor, simet at magna',
+					action: {
+						target: 'a',
+						eventType: 'click',
+						expectEvent: true,
+					}
+				},
+				{
+					el: $('hgroup'),
+					placement: 'bottom',
+					message: 'Lorem ipsum dolor, simet at magna'
+				},
+				{
+					el: $('#step_3'),
+					placement: 'right',
+					message: 'Lorem ipsum dolor, simet at magna'
+				},
+				{
+					el: $('#step_4'),
+					placement: 'top',
+					message: 'Lorem ipsum dolor, simet at magna'
+				}
+			]
+		});
+	  });
+	</script>
+</html>

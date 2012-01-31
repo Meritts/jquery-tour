@@ -5,519 +5,496 @@
  *  License: MIT
  */
 ;(function ( $, window, document, undefined ) {
-
-  var pluginName = 'tour',
-    defaults = {
-      name: null, // The name of your tour. Is like an ID,
-      version : null,
-      openOn: 'load', // Open on plugin load or other specific event
-      localStorage: {
-      	timesToView: 3,
-      	openOnLastStep: false
-      },
-      events:{
-      	beforeOpen: null,
-      	onOpen: null,
-      	onStepMove: null,
-      	onStepNext: null,
-      	onStepPrev: null,
-      	beforeClose: null, // TODO
-      	onClose: null      // TODO
-      },
-      analytics: {
-        timesViewed: 0,
-      	totalTime: null, // TODO
-      	stepTime: [],  // TODO
-        endStep: null   // TODO
-      },
-      texts: {
-      	closeTitle: "Fechar",
-      	headerTitle: "Primeira vez aqui?",
-      	mainButton: 'Começar tour',
-      	nextButton: 'Próximo &gt;',
-      	prevButton: '&lt; Anterior',
-      	restartButton: 'Reiniciar',
-      	endButton: 'Terminar'
-      },
-      tipOffset: 10, // Distance of the tip for the highlight element
-      steps: {}, // The JSON array of the steps of your tour
-      overlay: true,
-      placement: 'bottom'
-    };
-
-  function Plugin( element, options ) {
-    this.element = element;
-    this.options = $.extend( {}, defaults, options) ;
-    this._defaults = defaults;
-    this._name = pluginName;
-    this.currentIndex = -1;
-    this.stepAnalytics = [];
-        
-    this.init();
-  }
+  var __DEV__ = window.__DEV__ || 0;
 	
-  /**
-   * @description Initialized the Plugin. We check some values, then we initialize each tour
-   * @params No params
-   * @updated 25/11/2012
-   */
-  Plugin.prototype.init = function (){
-  	
-  	// A name must be given to get configuration data and to helps when you need more than one tour on one page
-    if(!this.options.name){
-      return false;
-    }
-     
-    // We to se if the event is valid, and assign as default the load event
-    switch(this.options.openOn){
-      case 'load' : break;
-      case 'click': break;
-      case 'dbclick': break;
-      case 'blur': break;
-      case 'focus': break;
-      case 'focusin': break;
-      case 'focusout': break;
-      case 'hover': break;
-      case 'keydown': break;
-      case 'keypress': break;
-      case 'mousedown': break;
-      case 'mouseover': break;
-      case 'mouseleave': break;
-      case 'mouseenter': break;
-      case 'mouseup': break;
-      case 'scroll': break;
-      default: this.options.openOn = 'load';
-    }
+  
+  var Tour = function(element, options) {
+    this.settings = $.extend({}, $.fn.tour.defaults, options);
+    this.$element = $(element);
+    this.currentIndex = -1;
     
-    if(this.options.localStorage){
-    	this.getLocalStorageData();
-    }else{
-      this.options.openOn === 'load' ? this.showInitialBar() : this.elementEventHandler();	
-    }
-  };
-  
-  /**
-   * @description Bind the event on the element which initialized the plugin
-   * @params No params
-   * @updated 26/11/2012
-   */
-  Plugin.prototype.elementEventHandler = function() {
-  	var self = this;
-  	
-  	$(this.element).bind(this.options.openOn, function(e){
-  	  e.preventDefault(); self.showInitialBar(); 
-  	});
-  };
-  
-  /**
-   * @description Bind events on the Tour Box
-   * @params No params
-   * @updated 26/11/2012
-   */
-  Plugin.prototype.events = function() {
-  	var self = this;
-  	
-  	$('.start-tour, .next-step').bind('click', function() { self.moveStep(self, true); });
-  	$('.prev-step').bind('click', function() { self.moveStep(self, false); });
-  	$('.restart-tour').bind('click', function() { self.restartTour(self); });
-  	$('.end-tour').bind('click', function() { self.endTour(self); });
-  };
-  
-  
-  /**
-   * @description Get LocalStorage data and verify if is necessary to open the tour div
-   * @params No params
-   * @updated 26/11/2012
-   */
-  Plugin.prototype.getLocalStorageData = function() {
-  	
-  	 // A version MUST be given if use localStorage
-    if(!this.options.version) {
-      this.options.version = 'V1.0';
-    }
+    // FIX THIS
+    $.extend(this, StorageHelper);
+    $.extend(this, OverlayHelper);
+    $.extend(this, TipHelper);
+    $.extend(this, PositionHelper);
     
-    var tourObj = localStorage.getItem('tour');
-
-    // Didnt found any configuration on localStorage
-    if(!tourObj) {
-      this.options.openOn === 'load' ? this.showInitialBar() : this.elementEventHandler();
-    }else{
-      tourObj = JSON.parse(tourObj);
-      for(var i in tourObj){
-      	
-        if(tourObj[i].name === this.options.name){
-        		
-        	// If you change the version, we reset this localStorage data
-        	if(tourObj[i].version === this.options.version){
-        		// Se if has reached the num of total visualizations of the tour
-        		
-        	  if(tourObj[i].analytics.timesViewed < this.options.localStorage.timesToView){
-        	  	// TODO - FAZER PARA PODER RECOMECAR DE ONDE PAROU - INTERFACE DEVE MOSTRAR MSGM
-        	  	this.options.openOn === 'load' ? this.showInitialBar() : this.elementEventHandler();
-        	  }
-        	  return false;
-        	}else{
-        	  this.options.openOn === 'load' ? this.showInitialBar() : this.elementEventHandler();
-        	  return false;
-        	}
-        }
-      }
-      
-      this.options.openOn === 'load' ? this.showInitialBar() : this.elementEventHandler();
-    }
-  };
-  
-  /**
-  * @description Create HTML of the Tour BOX
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.showInitialBar = function () {
-    var html = '<section class="tour-container">';
-          html += '<div class="not-started"> '
-    	    html += '<a href="javascript:void(0)" title="' + this._defaults.texts.closeTitle + '" class="end-tour">x</a>';
-    		  html += '<header><p>'+ this._defaults.texts.headerTitle +'</p></header>';
-    		   html += '<div class="actions-container">';
-    		     html += '<button class="start-tour">'+ this._defaults.texts.mainButton +'</button>';
-    		     html += '<button class="prev-step">'+ this._defaults.texts.prevButton +'</button>';
-    		     html += '<button class="next-step">'+ this._defaults.texts.nextButton +'</button>';
-    		     html += '<button class="end-tour">'+ this._defaults.texts.endButton +'</button>';
-    		   html += '</div>';
-    		   html += '<footer>';
-    		     html += '<a href="javascript:void(0)" class="end-tour">'+ this._defaults.texts.endButton +'</a>';
-    		     html += '<a href="javascript:void(0)" class="restart-tour">'+ this._defaults.texts.restartButton +'</a>';
-    		   html += '</footer>';
-    	   html += '</div>'
-    	 html += '</section>';
-    	 html += '<div class="tour-overlay num_1"></div><div class="tour-overlay num_2"></div><div class="tour-overlay num_3"></div><div class="tour-overlay num_4"></div>';
-    	
-    $(document.body).append(html);
-    
-    
-    this.events();
-  };
-  
- /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.moveStep = function (self, isNext) {
-    var stepObj = isNext ? self.options.steps[++self.currentIndex] : self.options.steps[--self.currentIndex];
-    var tourContainer = $('.tour-container').children('div').get(0);
- 	
-	if(self.currentIndex === 0){
-		tourContainer.className = 'started_first';
-	}else if(self.currentIndex > 0 ) {
-		tourContainer.className = 'started_middle';
-	}
-	if (!self.options.steps[self.currentIndex + 1]) {
-		tourContainer.className = 'started_last';
-	}
-    
-    self.resetStep(self);
-    if(stepObj) { self.createOverlay(stepObj, self); }
-  };
-  
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.resetStep = function (self) {
-   	 $('.tour-container').find('.next-step').removeAttr('disabled');
-     $('.tour-overlay').removeAttr('style');
-     $('.tour-tip').remove();
-  };
-  
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.endTour = function (self) {
-  	self.resetStep(self);
-  	$('.tour-container').fadeOut();
-  	
-  	if(!self.options.analytics.disabled){
-  	  // Zerar contador de tempo
-      var tourObj = JSON.parse(localStorage.getItem('tour')) || [];
-  	  var updated;
-  	  
-  		if(tourObj.length > 0 ) {
-  		  for(var i in tourObj) {
-            if(tourObj[i].name === self.options.name){
-              if(tourObj[i].version === self.options.version){
-              	// TODO - ATUALIZAR O RESTO
-            	tourObj[i].analytics.timesViewed++;
-                updated = true;
-              }else{
-              	// If is a newer version, we delete the current object
-              	tourObj.splice(i, 1);
-              }
-              break;
-            } 	
-  		  }
-  		}
-  		
-  		if(!updated){
-  		  tourObj.push(self.createStorageObject(self));
-  		}
-  		localStorage.setItem('tour', JSON.stringify(tourObj));
-  	}
-  };
-  
-  //TODO
-  Plugin.prototype.startStepAnalytic = function() {
-  	
-  };
-  
-  Plugin.prototype.endStepAnalytic = function() {
-  	
-  };
-  
-  Plugin.prototype.createStorageObject = function(self) {
-  	
-  	// We get the current STEP to know where the user end the tour
-  	var currentStep = self.currentIndex;
-  	// Check if user has completed all steps
-  	if(currentStep + 1 === self.options.steps.length) {
-  	  // -1 represent a user who has completed all steps of the tour
-  	  currentStep = -1; 
-  	}
-  	
-  	return {
-      name: self.options.name,
-	  version: self.options.version,
-      analytics : {
-      	totalSteps: self.options.steps.length,
-      	endStep: currentStep, 
-        timesViewed: 1,
-	    totalTime: null, // TODO
-        stepsInfo: []    // TODO
-	  }
-    };
-  };
-  
-  
-  
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.restartTour = function (self) {
-  	self.resetStep(self);
-  	self.currentIndex = -1;
-  	$('.tour-container').find('.next-step').trigger('click');
-  };
-   
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.createOverlay = function (tipObject, self) {
-    var properties = self.getElementProperties(tipObject.el);
-    
-    $('.num_1').css({ width: properties.left, height: $(document.body).height() } );
-	$('.num_2').css({ width: properties.width,height: $(document.body).height() - (properties.top + properties.height),top: properties.top + properties.height,left: properties.left});
-    $('.num_3').css({ width: $(document.body).width() - (properties.left + properties.width), height: $(document.body).height() });
-    $('.num_4').css({ height: properties.top,left: properties.left,width: properties.width });
-    $('.tour-overlay').show();
-    
-    if(tipObject.message) {
-    	self.createTip(tipObject, properties, self);
-    }
-    
-  };
-  
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.getElementProperties = function ($el) {
-  	return { left: $el.offset().left, top: $el.offset().top, width: $el.outerWidth(), height: $el.outerHeight() };
-  };
-    
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */ 
-  Plugin.prototype.createTip = function (tipObject, properties, self) {
-    var html  = '<div class="tour-tip">';
-    if(tipObject.title){
-      html += '<h3>'+ tipObject.title +'</h3>';
-    }
-    html += '<div class="content">'+ tipObject.message +'</div>';
-    html += '</div>';
-    	    
-    $(document.body).append(html);
-    self.setTipPosition(tipObject, properties, self);
-    
-    $targetObject = tipObject.placement === 'top' ? $('.tour-tip') : $(tipObject.el);
-    
-    $('html, body').animate({
-	  scrollTop: $targetObject.offset().top
-	});
-		 			
-    if(tipObject.action){
-      self.tourElementHandler(tipObject, self);
-    }
-  };
-  
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.tourElementHandler = function (tipObject, self) {
-  	if(tipObject.action.blockByEvent) { $('.tour-container').find('.next-step').attr('disabled', 'true'); }
-  	
-  	tipObject.el.bind(tipObject.action.eventType + '.tour-object', {self: self}, self.tourElementAction);
-  };
-  
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.tourElementAction = function (e) {
-  	$(this).unbind(e.type + '.tour-object');
-  	var self = e.data.self;
-  	$('.tour-container').find('.next-step').trigger('click');
-  };
-  
-  /**
-  * @description 
-  * @params No params
-  * @updated 26/11/2012
-  */
-  Plugin.prototype.setTipPosition = function (tipObject, properties, self) {
-    var $tourTip = $('.tour-tip');
-   	
-   	if(!tipObject.placement){ 
-   	  tipObject.placement = 'bottom';
-   	}else{
-   		if(tipObject.placement !== 'top' || tipObject.placement !== 'bottom' ||
-   		  tipObject.placement !== 'left' || tipObject.placement !== 'right'){
-   		  	tipObject.placement = 'bottom';
-   		  }
+    if(this.settings.beforeStart){
+   	  this.settings.beforeStart.apply(this);
    	}
    	
-    if(tipObject.placement === 'top'){
-      $tourTip.css({ 
-        top: properties.top - $tourTip.height() - self.options.tipOffset,
-        left: properties.left + ((properties.width - $tourTip.width()) / 2) 
+    this.initialize();
+  }
+ 
+  Tour.prototype = {
+    
+    /**
+  	* @description
+  	* @params No params
+  	* @updated 27/01/2012
+  	*/
+    initialize: function() { 	
+  	  // A name must be given to get configuration data and to helps when you need more than one tour on one page
+      if(!this.settings.name){
+      	if (__DEV__) {
+      	  console.log('Tour: A name must be given to get configuration data and to helps when you need more than one tour on one page.');
+      	}
+        return false;
+      }
+      
+      // We to se if the event is valid, and assign as default the load event
+      switch(this.settings.openOn){
+        case 'load' : break;
+        case 'click': break;
+        case 'dbclick': break;
+        case 'blur': break;
+        case 'focus': break;
+        case 'focusin': break;
+        case 'focusout': break;
+        case 'hover': break;
+        case 'keydown': break;
+        case 'keypress': break;
+        case 'mousedown': break;
+        case 'mouseover': break;
+        case 'mouseleave': break;
+        case 'mouseenter': break;
+        case 'mouseup': break;
+        case 'scroll': break;
+        default: this.settings.openOn = 'load';
+      }
+      
+      //TODO - FIX THIS
+      this.createMarkup(function(_this){
+        if(_this.settings.localStorage){
+      	  _this.getData();
+        }else{
+          _this.settings.openOn === 'load' ?
+            _this.open() : _this.elementEventHandler();
+        }
       });
       
-    }else if(tipObject.placement === 'bottom'){
-      $tourTip.css({ 
-        top: properties.top + properties.height + self.options.tipOffset,
-        left: properties.left + ((properties.width - $tourTip.width()) / 2)
-      });
-      
-    }else if(tipObject.placement === 'right'){
-      $tourTip.css({
-      	top: properties.top + ((properties.height - $tourTip.height()) /2 ),
-      	left: properties.left + properties.width + self.options.tipOffset
-      });
-      
-    }else if(tipObject.placement === 'left'){
-      $tourTip.css({
-      	top: properties.top + ((properties.height - $tourTip.height()) /2 ),
-      	left: properties.left - $tourTip.width() - self.options.tipOffset
-      }); 
-    }
+  	},
+  	
+  	/**
+  	* @description
+  	* @params No params
+  	* @updated 27/01/2012
+  	*/
+  	open: function(e) {
+  	  if(e) e.preventDefault();
+  	  var target = e ? $(this).data('tour').settings.name : this.settings.name;
+  	  $(document.getElementById(target)).show();
+  	  
+  	  if(this.settings.events.onOpen){
+  	  	this.settings.events.onOpen.apply(this);
+  	  }
+  	},
+  	
+  	/**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+  	elementEventHandler: function() {
+  	  this.$element.bind('click', this.open);
+  	},
+  	
+  	/**
+  	 * @description Create the Main Box of the Tour
+  	 * @params (function) callback
+  	 * @updated 27/01/2012
+  	 */
+  	createMarkup: function(callback) {
+  	  var tmpl = this.settings.tmpl.container;
+  	  var data = $.extend(this.settings.labels, {name: this.settings.name});
+
+  	  var $body = $('body');
+  	  
+  	  // Replace texts
+  	  $.each(data, function(key, value){
+  	    tmpl = tmpl.replace('{{' + key + '}}', value);
+  	  });
+  	  
+  	  $body.append(tmpl).append(this.settings.tmpl.overlay);
+  	  
+  	  this.$tourContainer = $('#' + this.settings.name).data('tour', this);
+  	  
+  	  this.events();
+  	  callback(this);
+  	},
+  	
+  	/**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+  	events: function() {
+  	  $('.start-tour, .next-step').bind('click', this.changeStep);
+  	  $('.prev-step').bind('click', this.changeStep);
+  	  $('.close-tour').bind('click', this.endTour);
+  	},
+  	
+  	/**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+  	changeStep: function() {
+      var $this = $(this);
+  	  var action = $this.get(0).className;
+      var $container = $this.parents('.tour-container');
+  	  var _this = $container.data('tour');
+  	  
+  	  var tourStep = action === 'start-tour' || action === 'next-step' ?
+  	    _this.settings.steps[++_this.currentIndex] : _this.settings.steps[--_this.currentIndex];
+  	    
+  	  var className;
+  	  
+  	  if(_this.currentIndex === 0 ) { 
+  	  	className = 'started_first'; 
+  	  }else if(_this.currentIndex > 0 ) {
+        className = 'started_middle';
+      }
+  	  if(!_this.settings.steps[_this.currentIndex + 1]) { 
+  	  	className = 'started_last';
+  	  }
+  	  
+  	  $container.removeClass('not-initialized started_first started_middle started_last').addClass(className)
+  	  			.hide();
+  	  
+  	  
+  	  if(_this.settings.overlay){
+  	    _this.createOverlay();
+  	  }
+  	  
+  	  if(_this.settings.events.onStepMove){
+  	  	_this.settings.events.onStepMove.apply(_this, [action]);
+  	  }
+   	},
+  	
+  	/**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+  	endTour: function() {
+  	  var $container = $(this).parents('.tour-container');
+  	  var _this = $container.data('tour');
+  	  
+  	  $container.remove();
+  	  
+  	  // TODO - FIX
+  	  $('.tour-overlay').fadeOut();
+  	  
+  	  if(_this.settings.events.onClose){
+  	    _this.settings.events.onClose.apply(_this);
+  	  }
+  	  
+  	  _this.saveData();
+  	},
+  	
+  	tourStepEventHandler: function(tourStep) {
+  	  if(tourStep.action.expectEvent) { 
+  	  	this.$tourContainer.find('.next-step').attr('disabled', 'true');
+  	  }
+  	    
+  	  var target = tourStep.action.target === 'this' ? tourStep.el : tourStep.el.find(tourStep.action.target);
+  	 
+  	  var eventType = tourStep.action.eventType;
+  	  target.bind(eventType + '.tour-event', {_this: this}, this.tourStepAction);
+  	},
+  	
+  	tourStepAction: function(e){
+  	  var $this = $(this);
+  	  var _this = e.data._this;
+  	  
+  	  console.log(_this);
+  	  $this.unbind(e.type + '.tour-event');
+  	  _this.$tourContainer.find('.next-step').trigger('click');
+  	}
+  	
   };
   
-  $.fn[pluginName] = function ( options ) {
-    return this.each(function () {
-      if (!$.data(this, 'plugin_' + pluginName)) {
-        $.data(this, 'plugin_' + pluginName, new Plugin( this, options ));
+  
+  var StorageHelper = {
+  	
+  	/**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+  	getData: function() {
+  		
+  	  var tourData = localStorage.getItem('tour');
+
+      // Didnt found any configuration on localStorage
+      if(!tourData) {
+        this.settings.openOn === 'load' ? 
+          this.open() : this.elementEventHandler();
       }
-    });
+      else{
+      	tourData = JSON.parse(tourData);
+      	
+      	for(var i in tourData){
+      	  if(tourData[i].name === this.settings.name){
+        	if(tourData[i].analytics.timesViewed < this.settings.localStorage.timesToView){
+        	  // TODO - FAZER PARA PODER RECOMECAR DE ONDE PAROU - INTERFACE DEVE MOSTRAR MSGM
+        	  this.settings.openOn === 'load' ? 
+                  this.open() : this.elementEventHandler();
+        	}
+        	return false;
+          }
+        }
+      }
+    },
+    
+    /**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+    saveData: function() {
+      var tourData = JSON.parse(localStorage.getItem('tour')) || [];
+  	  var updated;
+  	 
+  	  if(tourData.length > 0 ) {
+  	    for(var i in tourData) {
+          if(tourData[i].name === this.settings.name){
+              tourData[i].analytics.timesViewed++;
+              updated = true;
+              break;
+          } 	
+  	    }
+  	  }
+  	  
+  	  if(!updated){
+  	    tourData.push(this.createStorageObject(this));
+  	  }
+  	  
+  	  localStorage.setItem('tour', JSON.stringify(tourData));
+    },
+    
+    /**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+    createStorageObject: function() {  	
+  	  
+  	  return {
+        name: this.settings.name,
+        analytics : {
+      	  totalSteps: this.settings.steps.length,
+      	  endStep: this.currentIndex + 1,
+          timesViewed: 1,
+	      totalTime: null
+	    }
+      };
   }
-
+  	
+  };
+  
+  var OverlayHelper = {
+  	
+  	/**
+  	 * @description
+  	 * @params No params
+  	 * @updated 27/01/2012
+  	 */
+  	createOverlay: function() {
+  	  var tourStep = this.settings.steps[this.currentIndex];
+  	  var properties = this.getElementProperties(tourStep.el);
+  	  var $body = $(document.body);
+  	  var $window = $(window);
+  		
+  	  var height = $body.height() > $window.height() ? $body.height() : $window.height(); 
+  		
+  	  $('.num_1').css({ width: properties.left, height: height } );
+	  $('.num_2').css({ width: properties.width,height: height - (properties.top + properties.height),top: properties.top + properties.height,left: properties.left});
+      $('.num_3').css({ width: $body.width() - (properties.left + properties.width), height: height });
+      $('.num_4').css({ height: properties.top,left: properties.left,width: properties.width });
+      $('.tour-overlay').show();
+        
+      this.setTipPosition(tourStep, properties);
+  	}
+  	
+  };
+  
+  var TipHelper = {
+  	
+  	/**
+  	* @description
+  	* @params No params
+  	* @updated 27/01/2012
+  	*/
+  	setTipPosition: function(tourStep, properties) {
+  	  var title = this.settings.labels.title;
+  	  	  title += ' (' + this.settings.labels.titleStep + ' ' +  (this.currentIndex + 1);
+  	  	  title += ' - ' + this.settings.steps.length + ')';
+  	  
+  	  this.$tourContainer.css('position', 'absolute')
+  	  	  .find('.next-step').removeAttr('disabled').end()
+  	  	  .find('h2').html(title).end()
+  	  	  .find('p').html(tourStep.message).end()
+  	  	  .fadeIn(300);
+  	  
+  	  switch(tourStep.placement){
+  	  	case 'bottom' :
+  	  	  this.$tourContainer.css({ 
+            top: properties.top + properties.height + this.settings.tip.offset,
+            left: properties.left + ((properties.width - this.$tourContainer.width()) / 2)
+          });
+          
+  	  	  break;
+  	  	  
+  	  	case 'top' :
+		  this.$tourContainer.css({ 
+            top: properties.top - this.$tourContainer.height() - this.settings.tip.offset,
+            left: properties.left + ((properties.width - this.$tourContainer.width()) / 2) 
+          });
+          
+          break;
+  	  	
+  	  	case 'left' : 
+  	  	  this.$tourContainer.css({
+      	    top: properties.top + ((properties.height - this.$tourContainer.height()) /2 ),
+      	    left: properties.left - this.$tourContainer.width() - this.settings.tip.offset
+          });
+          
+          break;
+  	  	
+  	  	case 'right' : 
+  	  	  this.$tourContainer.css({
+      	    top: properties.top + ((properties.height - this.$tourContainer.height()) /2 ),
+      	    left: properties.left + properties.width + this.settings.tip.offset
+          });
+          
+          break;
+  	  }
+  	  
+  	  if(this.settings.autoScrolling){
+  	  	$('html, body').animate({scrollTop: tourStep.el.offset().top });
+  	  }
+  	  
+  	  if(tourStep.action) {
+  	    this.tourStepEventHandler(tourStep);
+  	  }
+  	}
+  	
+  };
+  
+  var AnalyticHelper = {
+  	
+  	/**
+  	* @description
+  	* @params No params
+  	* @updated 27/01/2012
+  	*/
+  	startCounter: function() { 
+  	
+  	},
+  	
+  	/**
+  	* @description
+  	* @params No params
+  	* @updated 27/01/2012
+  	*/
+  	endCounter: function() {
+  		
+  	}
+  	
+  };
+  
+  var PositionHelper = {
+  	
+  	/**
+  	* @description
+  	* @params No params
+  	* @updated 27/01/2012
+  	*/
+  	getElementProperties: function($el) {
+  	  return { 
+  	  	left: $el.offset().left,
+  	  	top: $el.offset().top,
+  	  	width: $el.outerWidth(),
+  	  	height: $el.outerHeight()
+  	  };
+  	}
+  	
+  };
+  
+  $.fn.tour = function (options) {
+    if ( options === true ) {
+      return this.data('tour');
+    }
+  	return this.each(function () {
+      var $this = $(this);
+      if ( typeof options == 'string' ) {
+        return $this.data('tour')[options]();
+      }
+      $(this).data('tour', new Tour( this, options ));
+    })
+  };
+  
+  $.fn.tour.defaults = {
+    name: null, // Name of your tour
+    
+    openOn: 'load', // Event OR false will not open
+    
+    enablePrevButton: false,	// TODO
+    autoScrolling: false,
+    
+    // LocalStorage deffinitions. If you don`t want to use, just put FALSE
+    localStorage: { //TODO
+      timesToView: 1,
+      openOnLastStep: false
+    },
+    
+    $tourContainer: null,
+    $overlay: null,	// TODO
+    
+    // html template. Is not recommended you change the markup
+    tmpl : {
+      container: '<section class="tour-container not-initialized" id="{{name}}"><div><h2>{{welcomeTitle}}</h2><p>{{welcomeMessage}}</p></div><footer><button  class="start-tour">{{start}}</button><button class="next-step">{{nextStep}}</button><button class="close-tour" href="javascript:void(0)">{{close}}</button></footer></section>',
+      overlay: '<div class="tour-overlay num_1"></div><div class="tour-overlay num_2"></div><div class="tour-overlay num_3"></div><div class="tour-overlay num_4"></div>'
+    },
+    
+    // If you don`t want to use, just set analytics as false
+    analytics: { // TODO
+      timesViewed: 0,
+      totalTime: null, 
+      stepTime: [],
+      endStep: null   
+    },
+    
+    events: {
+      beforeStart: null,
+      onOpen: null,
+      onClose: null,
+      onStepMove: null
+    },
+    
+    labels: {
+      close: "Fechar",
+      start: "Iniciar Tour",
+      nextStep: 'Continuar &gt;',
+      prevStep: '&lt; Voltar',
+      title: 'Tour',
+      titleStep: 'Etapa',
+      welcomeTitle: 'Lorem',
+      welcomeMessage: 'lalalallalaa'
+    },
+      
+    tip: {
+      offset: 10,
+      animate: '',
+      delayIn: '',
+      defaultPlacement: 'top'
+    },
+      
+    overlay: true,
+      
+    steps: {}
+  };
+  
 })(jQuery, window, document);
-
-// var DragHandler = {
-//  
-//  
-	// // private property.
-	// _oElem : null,
-//  
-//  
-	// // public method. Attach drag handler to an element.
-	// attach : function(oElem) {
-		// oElem.onmousedown = DragHandler._dragBegin;
-//  
-		// // callbacks
-		// oElem.dragBegin = new Function();
-		// oElem.drag = new Function();
-		// oElem.dragEnd = new Function();
-//  
-		// return oElem;
-	// },
-//  
-//  
-	// // private method. Begin drag process.
-	// _dragBegin : function(e) {
-		// var oElem = DragHandler._oElem = this;
-		// this.style.cursor = 'move';
-//  		
-		// if (isNaN(parseInt(oElem.style.left))) { oElem.style.left = $(this).offset().left + 'px'; }
-		// if (isNaN(parseInt(oElem.style.top))) { oElem.style.top = $(this).offset().top + 'px'; }
-//  
-		// var x = parseInt(oElem.style.left);
-		// var y = parseInt(oElem.style.top);
-//  
-		// e = e ? e : window.event;
-		// oElem.mouseX = e.clientX;
-		// oElem.mouseY = e.clientY;
-//  
-		// oElem.dragBegin(oElem, x, y);
-//  
-		// document.onmousemove = DragHandler._drag;
-		// document.onmouseup = DragHandler._dragEnd;
-		// return false;
-	// },
-//  
-//  
-	// // private method. Drag (move) element.
-	// _drag : function(e) {
-		// var oElem = DragHandler._oElem;
-//  
-		// var x = parseInt(oElem.style.left);
-		// var y = parseInt(oElem.style.top);
-//  
-		// e = e ? e : window.event;
-		// oElem.style.left = x + (e.clientX - oElem.mouseX) + 'px';
-		// oElem.style.top = y + (e.clientY - oElem.mouseY) + 'px';
-//  
-		// oElem.mouseX = e.clientX;
-		// oElem.mouseY = e.clientY;
-//  
-		// oElem.drag(oElem, x, y);
-//  
-		// return false;
-	// },
-//  
-//  
-	// // private method. Stop drag process.
-	// _dragEnd : function() {
-		// var oElem = DragHandler._oElem;
-//  
-		// var x = parseInt(oElem.style.left);
-		// var y = parseInt(oElem.style.top);
-//  
-		// oElem.dragEnd(oElem, x, y);
-//  
-		// document.onmousemove = null;
-		// document.onmouseup = null;
-		// DragHandler._oElem = null;
-	// }
-//  
-// }
